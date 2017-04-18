@@ -3,6 +3,7 @@ package skillself.spring.sqlite.dao;
 import skillself.spring.sqlite.object.Contact;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Polytech
@@ -14,8 +15,8 @@ public interface ContactDao {
     List<Contact> findByFirstName(String firstName);
     String findLastNameById(Long id);
     String findFirstNameByid(Long id);
-    long insert(Contact contact);
-    void update(Contact contact);
+    Contact insert(Contact contact);
+    Optional<Contact> update(Contact contact);
     void delete(Long contactId);
 
     List<Contact> findAllWithDetails();

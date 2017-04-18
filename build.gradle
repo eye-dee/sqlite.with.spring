@@ -22,4 +22,7 @@ dependencies {
     //Sqlite Driver
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     compile group: 'org.xerial', name: 'sqlite-jdbc', version: '3.7.2'
+
+    testCompile 'org.assertj:assertj-core:3.6.2'
+
 }
