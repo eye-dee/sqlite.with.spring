@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @Builder
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "id")
 //@ToString(exclude = {"contactPhoneDetailList"})
 public class Contact {
     private final Long id;

@@ -1,11 +1,15 @@
 package skillself.spring.sqlite.dao;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+import skillself.spring.sqlite.ApplicationConfig;
 import skillself.spring.sqlite.object.Contact;
 
 import java.sql.Date;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -14,13 +18,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * sqlite.with.spring
  * Created by igor on 18.04.17.
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {ApplicationConfig.class})
+@Transactional
 public class ContactDaoTest {
+    @Autowired
     private ContactDao contactDao;
-
-    @Before
-    public void setUp() {
-        contactDao = new ContactDaoImpl();
-    }
 
     @Test
     public void findAllEmpty() {
@@ -31,12 +34,13 @@ public class ContactDaoTest {
 
     @Test
     public void findAllNotEmpty() {
-        contactDao.insert(someContact());
+        final Contact contact = someContact();
+        contactDao.insert(contact);
 
         assertThat(contactDao.findAll())
                 .isNotNull()
                 .hasSize(1)
-                .contains(someContact());
+                .contains(contact);
     }
 
     @Test
@@ -48,7 +52,7 @@ public class ContactDaoTest {
 
     @Test
     public void findByFirstNameExists() {
-        Contact someContact = someContact();
+        final Contact someContact = someContact();
         contactDao.insert(someContact);
 
         assertThat(contactDao.findByFirstName(someContact.getFirstName()))
@@ -60,9 +64,11 @@ public class ContactDaoTest {
 
     @Test
     public void insert() {
-        Contact contact = someContact();
+        final Contact contact = someContact();
         assertThat(contactDao.insert(contact))
                 .isNotNull()
+                .matches(contact1 -> contact1.getId() > 0)
+                .hasNoNullFieldsOrProperties()
                 .isEqualTo(contact);
     }
 
@@ -70,45 +76,42 @@ public class ContactDaoTest {
     public void findLastNameByIdNotExists() {
         assertThatThrownBy(() -> contactDao.findLastNameById(1L))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Id is not exists");
+                .hasMessageContaining("Id 1 is not exists");
     }
 
     @Test
     public void findLastNameByIdExists() {
-        Contact contact = someContact();
-        contactDao.insert(contact);
+        final Contact contact = contactDao.insert(someContact());
 
         assertThat(contactDao.findLastNameById(contact.getId()))
-                .isEqualTo(contact);
+                .isEqualTo(contact.getLastName());
     }
 
     @Test
     public void findFirstNameByIdNotExists() {
         assertThatThrownBy(() -> contactDao.findFirstNameByid(1L))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Id is not exists");
+                .hasMessageContaining("Id 1 is not exists");
     }
 
     @Test
     public void findFirstNameByIdExists() {
-        Contact contact = someContact();
-        contactDao.insert(contact);
+        final Contact contact = contactDao.insert(someContact());
 
         assertThat(contactDao.findFirstNameByid(contact.getId()))
-                .isEqualTo(contact);
+                .isEqualTo(contact.getFirstName());
     }
 
     @Test
     public void updateNotExists() {
         assertThat(contactDao.update(someContact()))
-                .isNotNull()
-                .isInstanceOf(Optional.class);
+                .isFalse();
     }
 
     @Test
     public void updateExists() {
-        Contact contact = someContact();
-        Contact newContact = Contact
+        final Contact contact = contactDao.insert(someContact());
+        final Contact newContact = Contact
                 .builder()
                 .id(contact.getId())
                 .birthDate(contact.getBirthDate())
@@ -116,22 +119,20 @@ public class ContactDaoTest {
                 .firstName("newFirstName")
                 .build();
 
-        contactDao.insert(contact);
         assertThat(contactDao.update(newContact))
-                .matches(optional -> optional.get().equals(newContact));
+                .isTrue();
     }
 
     @Test
     public void delete() {
-        Contact contact = someContact();
-        contactDao.insert(contact);
+        final Contact contact = contactDao.insert(someContact());
         contactDao.delete(contact.getId());
 
         assertThat(contactDao.findAll())
                 .hasSize(0);
     }
 
-    private Contact someContact() {
+    private static Contact someContact() {
         return Contact.builder()
                 .firstName("1")
                 .lastName("2")
