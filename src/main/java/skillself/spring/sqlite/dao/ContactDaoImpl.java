@@ -3,11 +3,9 @@ package skillself.spring.sqlite.dao;
 import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import skillself.spring.sqlite.object.Contact;
 
-import java.sql.PreparedStatement;
 import java.util.List;
 
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
@@ -29,6 +27,7 @@ public class ContactDaoImpl implements ContactDao {
                             .build();
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public List<Contact> findAll() {
@@ -55,45 +54,59 @@ public class ContactDaoImpl implements ContactDao {
                 CONTACT_ROW_MAPPER
         );
 
-        if (contacts.size() == 0) {
+        /*if (contacts.size() == 0) {
             throw new IllegalArgumentException(String.format("Id %s is not exists",id));
         }
 
         return singleResult(contacts).getLastName();
+    */
+
+        return null;
     }
 
     @Override
     public String findFirstNameByid(final Long id) {
-        final List<Contact> contacts = jdbcTemplate.query(
+        return singleResult(jdbcTemplate.query(
                 "Select * from Contact WHERE id = ?",
                 new Object[]{id},
                 CONTACT_ROW_MAPPER
-        );
+        )).getFirstName();
 
-        if (contacts.size() == 0) {
+        /*if (contacts.size() == 0) {
             throw new IllegalArgumentException(String.format("Id %s is not exists",id));
         }
 
         return singleResult(contacts).getFirstName();
+    */
     }
 
     @Override
     public Contact insert(final Contact contact) {
-        final KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        jdbcTemplate.update(connection -> {
-                    final PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Contact(firstName, lastName, birthDate) VALUES (?,?,?)");
-                    preparedStatement.setString(1, contact.getFirstName());
-                    preparedStatement.setString(2, contact.getLastName());
-                    preparedStatement.setDate(3, contact.getBirthDate());
-                    return preparedStatement;
-                },
-                keyHolder);
-
-        /*jdbcTemplate.update(
+        jdbcTemplate.update(
                 "INSERT INTO Contact(firstName, lastName, birthDate) VALUES (?,?,?)",
                 contact.getFirstName(), contact.getLastName(), contact.getBirthDate());
-*/
+
+
+        return null;
+    }
+
+    /*  @Override
+        public Contact insert(final Contact contact) {
+            final KeyHolder keyHolder = new GeneratedKeyHolder();
+
+            jdbcTemplate.update(connection -> {
+                        final PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Contact(firstName, lastName, birthDate) VALUES (?,?,?)");
+                        preparedStatement.setString(1, contact.getFirstName());
+                        preparedStatement.setString(2, contact.getLastName());
+                        preparedStatement.setDate(3, contact.getBirthDate());
+                        return preparedStatement;
+                    },
+                    keyHolder);
+
+            *//*jdbcTemplate.update(
+                "INSERT INTO Contact(firstName, lastName, birthDate) VALUES (?,?,?)",
+                contact.getFirstName(), contact.getLastName(), contact.getBirthDate());
+*//*
         return Contact.builder()
                 .id(keyHolder.getKey().longValue())
                 .firstName(contact.getFirstName())
@@ -101,7 +114,7 @@ public class ContactDaoImpl implements ContactDao {
                 .birthDate(contact.getBirthDate())
                 .build();
     }
-
+*/
     @Override
     public boolean update(final Contact contact) {
         return 1 == jdbcTemplate.update(
