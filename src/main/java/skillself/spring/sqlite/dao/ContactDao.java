@@ -14,9 +14,9 @@ public interface ContactDao {
     List<Contact> findByFirstName(String firstName);
     String findLastNameById(Long id);
     String findFirstNameByid(Long id);
-    long insert(Contact contact);
-    void update(Contact contact);
-    void delete(Long contactId);
+    Contact insert(Contact contact);
+    boolean update(Contact contact);
+    boolean delete(Long contactId);
 
     List<Contact> findAllWithDetails();
 }
